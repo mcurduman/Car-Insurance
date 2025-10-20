@@ -17,7 +17,6 @@ class Settings(BaseSettings):
     APP_NAME: str = "my-flask-app"
     LOG_LEVEL: LogLevel | None = None
 
-    # Acceptăm URL generic (SQLite/PG); în producție impunem Postgres
     DATABASE_URL: AnyUrl | None = None
 
     model_config = SettingsConfigDict(
