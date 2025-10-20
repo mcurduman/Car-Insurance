@@ -1,0 +1,9 @@
+fastapi
+redis
+types-redis
+uvicorn
+pydantic
+sqlalchemy
+passlib[bcrypt]
+pytest
+pydantic-settings

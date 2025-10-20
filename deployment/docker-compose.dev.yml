@@ -1,0 +1,12 @@
+services:
+  app:
+    build:
+      context: ../app
+    container_name: car-insurance-app-dev
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env.development
+    volumes:
+      - ../app:/app
+    command: uvicorn main:app --reload --host 0.0.0.0 --port 8000
