@@ -1,24 +1,28 @@
-from pydantic import BaseModel
+
+from pydantic import BaseModel, Field, EmailStr
 
 class UserBase(BaseModel):
-    username: str
-    email: str
+    username: str = Field(alias="username")
+    email: EmailStr = Field(alias="email")
 
 class UserCreate(UserBase):
-    password: str
+    password: str = Field(alias="password")
 
 class User(UserBase):
-    id: int
-    full_name: str
-    is_active: bool
-    is_superuser: bool
+    id: int = Field(alias="id")
+    full_name: str = Field(alias="fullName")
+    is_active: bool = Field(alias="isActive")
+    is_superuser: bool = Field(alias="isSuperuser")
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True, "populate_by_name": True}
+
+class LoginData(BaseModel):
+    username: str = Field(alias="username")
+    password: str = Field(alias="password")
 
 class Token(BaseModel):
-    access_token: str
-    token_type: str
+    access_token: str = Field(alias="accessToken")
+    token_type: str = Field(alias="tokenType")
 
 class TokenData(BaseModel):
-    username: str | None = None
+    username: str | None = Field(default=None, alias="username")

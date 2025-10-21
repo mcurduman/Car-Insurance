@@ -1,24 +1,19 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, Field, EmailStr
 from typing import Optional
 
 class OwnerBase(BaseModel):
-    name: str
-    email: Optional[str] = None
-    model_config = { "from_attributes": True }
+    name: str = Field(alias="name")
+    email: Optional[EmailStr] = Field(default=None, alias="email")
+    model_config = { "from_attributes": True,
+                     "populate_by_name": True }
     
 class OwnerCreate(OwnerBase):
-    @field_validator('email')
-    @classmethod
-    def validate_email(cls, v: Optional[str]) -> Optional[str]:
-        if v is not None and "@" not in v:
-            raise ValueError("Invalid email address")
-        return v
-    
+    pass
 
 class OwnerResponse(OwnerBase):
-    id: int
+    id: int = Field(alias="id")
 
 
 class OwnerUpdate(BaseModel):
-    name: Optional[str] = None
-    email: Optional[str] = None
+    name: Optional[str] = Field(default=None, alias="name")
+    email: Optional[str] = Field(default=None, alias="email")

@@ -3,6 +3,7 @@ from sqlalchemy.future import select
 from typing import Optional, Iterable
 from app.db.models.car_model import Car
 from app.db.repositories.base_repository import BaseRepository
+from sqlalchemy.orm import joinedload
 
 class CarRepository(BaseRepository[Car, int]):
     def __init__(self, session: AsyncSession):
@@ -24,6 +25,10 @@ class CarRepository(BaseRepository[Car, int]):
 
     async def list(self) -> Iterable[Car]:
         result = await self.session.execute(select(Car))
+        return result.scalars().all()
+    
+    async def list_with_owner(self) -> Iterable[Car]:
+        result = await self.session.execute(select(Car).options(joinedload(Car.owner)))
         return result.scalars().all()
 
     async def delete(self, id: int) -> None:

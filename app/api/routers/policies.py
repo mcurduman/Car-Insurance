@@ -1,14 +1,15 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
+from app.auth.oauth2 import get_current_user
+from app.db.models.user_model import User
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.api.deps import get_async_session  # trebuie să returneze AsyncSession
 from app.db.models.policy_model import InsurancePolicy
 from app.db.repositories.policy_repository import PolicyRepository
 from app.service.policy_service import PolicyService
 from app.schemas.policy_schema import InsurancePolicyBase, InsurancePolicyCreate, InsurancePolicyUpdate, InsurancePolicyResponse
 
-router = APIRouter(prefix="/policies", tags=["policies"])
+router = APIRouter(prefix="/policies", tags=["policies"], dependencies=[Depends(get_current_user)])
 
 async def get_policy_service(
     session: AsyncSession = Depends(get_async_session),

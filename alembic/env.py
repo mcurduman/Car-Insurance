@@ -21,7 +21,7 @@ if config.config_file_name is not None:
 
 # add your model's MetaData object here for 'autogenerate' support
 from app.db.base import Base
-from app.db.models import owner_model, car_model, claim_model, policy_model
+from app.db.models import owner_model, car_model, claim_model, policy_model, user_model
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,

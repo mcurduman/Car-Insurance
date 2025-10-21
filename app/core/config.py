@@ -17,8 +17,14 @@ class Settings(BaseSettings):
     APP_NAME: str = "car-insurance"
     LOG_LEVEL: Optional[LogLevel] = None
 
+    CORS_ALLOW_ORIGINS: list[str] = ["*"]
+
     DATABASE_URL: Optional[str] = None
     DATABASE_URL_SYNC: Optional[str] = None
+
+    SECRET_KEY: str
+    ALGORITHM: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     model_config = SettingsConfigDict(
         env_file=".env.development",               # util local; în producție folosește env vars / secrets

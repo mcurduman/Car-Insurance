@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Mapped, mapped_column, declarative_base
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Integer, ForeignKey, Date, Text, Numeric, DateTime, func
 from datetime import date, datetime
 from app.db.base import Base
@@ -11,3 +11,4 @@ class Claim(Base):
     description: Mapped[str] = mapped_column(Text, nullable=False)
     amount: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=func.now())
+    car = relationship("Car", back_populates="claims")

@@ -5,11 +5,13 @@ uvicorn
 pydantic
 sqlalchemy
 passlib[bcrypt]
+bcrypt==4.0.1
 pytest
 pydantic-settings
 aiosqlite
 alembic
 psycopg2-binary
 python-dotenv
+structlog
 asyncpg
-
+python-jose

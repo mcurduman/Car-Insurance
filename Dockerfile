@@ -9,6 +9,8 @@ COPY ./requirements.txt /app/requirements.txt
 COPY ./alembic /app/alembic
 COPY ./alembic.ini /app/alembic.ini
 
+COPY ./scripts /app/scripts
+
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
 EXPOSE 8000

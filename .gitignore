@@ -117,3 +117,4 @@ pgdata/
 
 # SQLite database file
 *.db
+scripts/create_superadmin.py

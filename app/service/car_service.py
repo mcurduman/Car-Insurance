@@ -1,5 +1,7 @@
 from app.db.repositories.car_repository import CarRepository
 from app.db.models.car_model import Car
+from app.db.repositories.policy_repository import PolicyRepository
+from app.db.repositories.claim_repository import ClaimRepository
 
 class CarService:
     def __init__(self, car_repository: CarRepository):
@@ -28,3 +30,14 @@ class CarService:
     
     async def list_cars(self) -> list[Car]:
         return list(await self.car_repository.list())
+    
+    async def list_cars_with_owner(self) -> list[Car]:
+        return list(await self.car_repository.list_with_owner())
+
+    
+    async def delete_car(self, id: int) -> None:
+        car = await self.car_repository.get(id)
+        if not car:
+            raise ValueError(f"Car with ID {id} does not exist.")
+        await self.car_repository.delete(id)
+        

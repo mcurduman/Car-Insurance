@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Mapped, mapped_column, declarative_base
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Integer, String, ForeignKey, Date
 from datetime import date
 from typing import Optional
@@ -12,3 +12,5 @@ class InsurancePolicy(Base):
     start_date: Mapped[date] = mapped_column(Date, nullable=False)
     end_date: Mapped[date] = mapped_column(Date, nullable=False)
     logged_expiry_at: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
+
+    car = relationship("Car", back_populates="policies")
