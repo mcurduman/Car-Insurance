@@ -1,8 +1,7 @@
-# app/core/settings.py
 from __future__ import annotations
 from enum import Enum
 from functools import lru_cache
-from typing import Literal, Any
+from typing import Literal, Any, Optional
 from pydantic import AnyUrl, PostgresDsn, field_validator, ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -12,23 +11,26 @@ class Env(str, Enum):
 
 LogLevel = Literal["CRITICAL","ERROR","WARNING","INFO","DEBUG","NOTSET"]
 
+
 class Settings(BaseSettings):
     ENV: Env = Env.development
-    APP_NAME: str = "my-flask-app"
-    LOG_LEVEL: LogLevel | None = None
+    APP_NAME: str = "car-insurance"
+    LOG_LEVEL: Optional[LogLevel] = None
 
-    DATABASE_URL: AnyUrl | None = None
+    DATABASE_URL: Optional[str] = None
+    DATABASE_URL_SYNC: Optional[str] = None
 
     model_config = SettingsConfigDict(
-        env_file=".env",               # util local; în producție folosește env vars / secrets
+        env_file=".env.development",               # util local; în producție folosește env vars / secrets
         env_file_encoding="utf-8",
         extra="ignore",
         case_sensitive=False,
     )
 
+
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
-    def set_and_validate_db(cls, v: str | None, info: Any) -> str:
+    def set_and_validate_db(cls, v: Optional[str], info: Any) -> str:
         env: Env = info.data.get("ENV", Env.development)
         if v:
             if env is Env.production:
@@ -42,6 +44,21 @@ class Settings(BaseSettings):
         if env is Env.development:
             return "sqlite+aiosqlite:///./dev.db"
         raise ValueError("DATABASE_URL must be set for production")
+
+    @field_validator("DATABASE_URL_SYNC", mode="before")
+    @classmethod
+    def set_and_validate_db_sync(cls, v: Optional[str], info: Any) -> str:
+        env: Env = info.data.get("ENV", Env.development)
+        if v:
+            if env is Env.production:
+                try:
+                    PostgresDsn(v)
+                except ValidationError as e:
+                    raise ValueError(f"Invalid Postgres DSN for production: {e}") from e
+            return v
+        if env is Env.development:
+            return "sqlite:///./dev.db"
+        raise ValueError("DATABASE_URL_SYNC must be set for production")
 
     @field_validator("LOG_LEVEL", mode="before")
     @classmethod

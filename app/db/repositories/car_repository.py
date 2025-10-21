@@ -1,0 +1,40 @@
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+from typing import Optional, Iterable
+from app.db.models.car_model import Car
+from app.db.repositories.base_repository import BaseRepository
+
+class CarRepository(BaseRepository[Car, int]):
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def get(self, id: int) -> Optional[Car]:
+        result = await self.session.execute(select(Car).where(Car.id == id))
+        return result.scalars().first()
+    
+    async def get_car_by_vin(self, vin: str) -> Optional[Car]:
+        result = await self.session.execute(select(Car).where(Car.vin == vin))
+        return result.scalars().first()
+
+    async def add(self, entity: Car) -> Car:
+        self.session.add(entity)
+        await self.session.commit()
+        await self.session.refresh(entity)
+        return entity
+
+    async def list(self) -> Iterable[Car]:
+        result = await self.session.execute(select(Car))
+        return result.scalars().all()
+
+    async def delete(self, id: int) -> None:
+        result = await self.session.execute(select(Car).where(Car.id == id))
+        car = result.scalars().first()
+        if car:
+            await self.session.delete(car)
+            await self.session.commit()
+
+    async def update(self, entity: Car) -> Car:
+        await self.session.merge(entity)
+        await self.session.commit()
+        await self.session.refresh(entity)
+        return entity

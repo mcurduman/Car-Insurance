@@ -1,13 +1,15 @@
-from flask import Flask
+from fastapi import FastAPI
 import logging
-from app.core.settings import get_settings
+from app.core.config import get_settings
+from app.api.routers import cars, owners, claims, health, policies
 
-def create_app() -> Flask:
-    cfg = get_settings()
-    app = Flask(__name__)
-    app.config["SECRET_KEY"] = "change-me"  # sau cfg din env dacă vrei
+cfg = get_settings()
+app = FastAPI(title=cfg.APP_NAME, debug=(cfg.ENV == "development"))
+app.include_router(cars.router)
+app.include_router(owners.router)
+app.include_router(claims.router)
+app.include_router(health.router)
+app.include_router(policies.router)
 
-    logging.basicConfig(level=getattr(logging, cfg.LOG_LEVEL),
-                        format="%(asctime)s %(levelname)s %(name)s: %(message)s")
-    # init extensii aici (db, etc.)
-    return app
+logging.basicConfig(level=getattr(logging, cfg.LOG_LEVEL),
+                    format="%(asctime)s %(levelname)s %(name)s: %(message)s")

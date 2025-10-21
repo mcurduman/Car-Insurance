@@ -7,3 +7,9 @@ sqlalchemy
 passlib[bcrypt]
 pytest
 pydantic-settings
+aiosqlite
+alembic
+psycopg2-binary
+python-dotenv
+asyncpg
+
