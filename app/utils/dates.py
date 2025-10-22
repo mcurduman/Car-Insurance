@@ -20,6 +20,11 @@ def validate_data_in_interval(d: date, start_date: date, end_date: date, field_n
         raise ValueError(f"{field_name} must be between {start_date} and {end_date}")
     return d
 
+def validate_data_in_interval_bool(d: date, start_date: date, end_date: date, field_name: str = "date") -> bool:
+    if not (start_date <= d <= end_date):
+        return False
+    return True
+
 def validate_year_of_manufacture(year: int) -> int:
     current_year = date.today().year
     if not (1886 <= year <= current_year):  # First car invented in 1886

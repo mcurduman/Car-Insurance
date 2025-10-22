@@ -16,7 +16,7 @@ class InsurancePolicyCreate(InsurancePolicyBase):
     @field_validator('end_date')
     @classmethod
     def validate_end_date(cls, v: date, values) -> date:
-        validate_start_end_dates(values['start_date'], v)
+        validate_start_end_dates(values.data.get('start_date'), v)
         return v
 
 class InsurancePolicyResponse(InsurancePolicyBase):

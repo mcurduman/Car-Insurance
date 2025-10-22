@@ -8,8 +8,8 @@ class PolicyService:
     async def get_policy(self, id: int) -> InsurancePolicy | None:
         return await self.policy_repository.get(id)
 
-    async def get_policy_by_car_id(self, car_id: int) -> InsurancePolicy | None:
-        return await self.policy_repository.get_by_car_id(car_id)
+    async def get_policies_by_car_id(self, car_id: int) -> list[InsurancePolicy]:
+        return await self.policy_repository.get_policies_by_car_id(car_id)
 
     async def add_policy(self, policy: InsurancePolicy) -> InsurancePolicy:
         return await self.policy_repository.add(policy)

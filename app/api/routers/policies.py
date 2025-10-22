@@ -1,69 +1,42 @@
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from app.auth.oauth2 import get_current_user
-from app.db.models.user_model import User
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.api.deps import get_async_session  # trebuie să returneze AsyncSession
+from app.api.deps import get_car_service, get_policy_service
 from app.db.models.policy_model import InsurancePolicy
-from app.db.repositories.policy_repository import PolicyRepository
 from app.service.policy_service import PolicyService
-from app.schemas.policy_schema import InsurancePolicyBase, InsurancePolicyCreate, InsurancePolicyUpdate, InsurancePolicyResponse
+from app.schemas.policy_schema import InsurancePolicyCreate, InsurancePolicyResponse
+from app.service.car_service import CarService
 
-router = APIRouter(prefix="/policies", tags=["policies"], dependencies=[Depends(get_current_user)])
 
-async def get_policy_service(
-    session: AsyncSession = Depends(get_async_session),
-) -> PolicyService:
-    policy_repository = PolicyRepository(session)
-    return PolicyService(policy_repository)
+router = APIRouter(prefix="/api/cars", tags=["policies"], dependencies=[Depends(get_current_user)])
 
-@router.get("/", response_model=List[InsurancePolicyResponse])
-async def list_policies(service: PolicyService = Depends(get_policy_service)):
-    policies = await service.list_policies()
-    return policies
-
-@router.get("/{policy_id}", response_model=InsurancePolicyResponse)
-async def get_policy(policy_id: int, service: PolicyService = Depends(get_policy_service)):
-    policy = await service.get_policy(policy_id)
-    if not policy:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Policy not found")
-    return policy
-
-@router.post("/", response_model=InsurancePolicyResponse, status_code=status.HTTP_201_CREATED)
-async def create_policy(
+@router.post("/{car_id}/policies/", status_code=status.HTTP_201_CREATED)
+async def create_policy_for_car(
+    car_id: int,
     policy_create: InsurancePolicyCreate,
-    service: PolicyService = Depends(get_policy_service),
+    response: Response,
+    car_service: CarService = Depends(get_car_service),
+    policy_service: PolicyService = Depends(get_policy_service),
 ):
+    car = await car_service.get_car(car_id)
+    if not car:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Car not found")
     policy = InsurancePolicy(**policy_create.model_dump())
-    try:
-        new_policy = await service.add_policy(policy)
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    new_policy = await policy_service.add_policy(policy)
+    response.headers["Location"] = f"/api/cars/{car_id}/policies/{new_policy.id}"
     return new_policy
 
-@router.put("/{policy_id}", response_model=InsurancePolicyResponse)
-async def update_policy(
-    policy_id: int,
-    policy_update: InsurancePolicyUpdate,
-    service: PolicyService = Depends(get_policy_service),
+@router.get("/{car_id}/policies/{policy_id}", response_model=InsurancePolicyResponse)
+async def get_policy_for_car(car_id: int, policy_id: int, policy_service: PolicyService = Depends(get_policy_service)):
+    policy = await policy_service.get_policy(policy_id)
+    if not policy or policy.car_id != car_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Policy not found for this car")
+    return policy
+
+@router.get("/{car_id}/policies", response_model=List[InsurancePolicyResponse])
+async def list_policies_for_car(
+    car_id: int,
+    policy_service: PolicyService = Depends(get_policy_service)
 ):
-    existing_policy = await service.get_policy(policy_id)
-    if not existing_policy:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Policy not found")
-
-    update_data = policy_update.model_dump(exclude_unset=True)
-    for field, value in update_data.items():
-        setattr(existing_policy, field, value)
-
-    try:
-        updated_policy = await service.update_policy(existing_policy)
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-    return updated_policy
-
-@router.delete("/{policy_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_policy(policy_id: int, service: PolicyService = Depends(get_policy_service)):
-    existing_policy = await service.get_policy(policy_id)
-    if not existing_policy:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Policy not found")
-    await service.delete_policy(policy_id)
+    policies = await policy_service.get_policies_by_car_id(car_id)
+    return policies

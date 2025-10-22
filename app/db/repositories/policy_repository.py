@@ -12,9 +12,9 @@ class PolicyRepository(BaseRepository[InsurancePolicy, int]):
         result = await self.session.execute(select(InsurancePolicy).where(InsurancePolicy.id == id))
         return result.scalars().first()
 
-    async def get_by_car_id(self, car_id: int) -> Optional[InsurancePolicy]:
+    async def get_policies_by_car_id(self, car_id: int) -> list[InsurancePolicy]:
         result = await self.session.execute(select(InsurancePolicy).where(InsurancePolicy.car_id == car_id))
-        return result.scalars().first()
+        return result.scalars().all()
 
     async def add(self, entity: InsurancePolicy) -> InsurancePolicy:
         self.session.add(entity)
