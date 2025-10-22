@@ -10,7 +10,8 @@ class OwnerRepository(BaseRepository[Owner, int]):
 
     async def get(self, id: int) -> Optional[Owner]:
         result = await self.session.execute(select(Owner).where(Owner.id == id))
-        return result.scalars().first()
+        scalars_result = result.scalars()
+        return scalars_result.first()
 
     async def add(self, entity: Owner) -> Owner:
         self.session.add(entity)
@@ -20,11 +21,13 @@ class OwnerRepository(BaseRepository[Owner, int]):
 
     async def list(self) -> Iterable[Owner]:
         result = await self.session.execute(select(Owner))
-        return result.scalars().all()
+        scalars_result = result.scalars()
+        return scalars_result.all()
 
     async def delete(self, id: int) -> None:
         result = await self.session.execute(select(Owner).where(Owner.id == id))
-        owner = result.scalars().first()
+        scalars_result = result.scalars()
+        owner = scalars_result.first()
         if owner:
             await self.session.delete(owner)
             await self.session.commit()

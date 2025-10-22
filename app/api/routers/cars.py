@@ -70,26 +70,6 @@ async def create_car(
     response.headers["Location"] = f"/api/cars/{new_car.id}"
     return new_car
 
-@router.put("/{car_id}", response_model=CarResponse)
-async def update_car(
-    car_id: int,
-    car_update: CarUpdate,
-    service: CarService = Depends(get_car_service),
-):
-    existing_car = await service.get_car(car_id)
-    if not existing_car:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Car not found")
-
-    update_data = car_update.model_dump(exclude_unset=True)
-    for key, value in update_data.items():
-        setattr(existing_car, key, value)
-
-    try:
-        updated_car = await service.update_car(existing_car)
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-    return updated_car
-
 @router.delete("/{car_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_car(
     car_id: int,

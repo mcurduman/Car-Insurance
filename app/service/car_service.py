@@ -24,7 +24,9 @@ class CarService:
         existing_car = await self.car_repository.get(car.id)
         if not existing_car:
             raise ValueError(f"Car with ID {car.id} does not exist.")
-        if car.vin != existing_car.vin:
+        # Compare VIN before mutation
+        original_vin = existing_car.vin
+        if hasattr(car, "vin") and car.vin != original_vin:
             raise ValueError("VIN cannot be changed.")
         return await self.car_repository.update(car)
     

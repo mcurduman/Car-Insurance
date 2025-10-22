@@ -11,11 +11,13 @@ class CarRepository(BaseRepository[Car, int]):
 
     async def get(self, id: int) -> Optional[Car]:
         result = await self.session.execute(select(Car).where(Car.id == id))
-        return result.scalars().first()
+        scalars_result = result.scalars()
+        return scalars_result.first()
     
     async def get_car_by_vin(self, vin: str) -> Optional[Car]:
         result = await self.session.execute(select(Car).where(Car.vin == vin))
-        return result.scalars().first()
+        scalars_result = result.scalars()
+        return scalars_result.first()
 
     async def add(self, entity: Car) -> Car:
         self.session.add(entity)
@@ -25,15 +27,18 @@ class CarRepository(BaseRepository[Car, int]):
 
     async def list(self) -> Iterable[Car]:
         result = await self.session.execute(select(Car))
-        return result.scalars().all()
+        scalars_result = result.scalars()
+        return scalars_result.all()
     
     async def list_with_owner(self) -> Iterable[Car]:
         result = await self.session.execute(select(Car).options(joinedload(Car.owner)))
-        return result.scalars().all()
+        scalars_result = result.scalars()
+        return scalars_result.all()
 
     async def delete(self, id: int) -> None:
         result = await self.session.execute(select(Car).where(Car.id == id))
-        car = result.scalars().first()
+        scalars_result = result.scalars()
+        car = scalars_result.first()
         if car:
             await self.session.delete(car)
             await self.session.commit()

@@ -30,6 +30,7 @@ class CarCreate(CarBase):
         return v
 
 class CarUpdate(BaseModel):
+    vin: str | None = Field(default=None, alias="vin")
     make: Optional[str] = Field(default=None, alias="make")
     model: Optional[str] = Field(default=None, alias="model")
     year_of_manufacture: Optional[int] = Field(default=None, alias="yearOfManufacture")
