@@ -15,3 +15,14 @@ python-dotenv
 structlog
 asyncpg
 python-jose
+pydantic[email]
+httpx
+coverage
+asgi-lifespan
+httpx[http2]
+pytest
+pytest-cov
+pytest-asyncio
+pytest-mock
+databases[asyncpg]
+python-multipart

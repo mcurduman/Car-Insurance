@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.api.deps import get_history_service
 from app.auth.oauth2 import get_current_user
-from typing import List, Union
+from typing import List
 
 router = APIRouter(prefix="/api/cars", tags=["history"], dependencies=[Depends(get_current_user)]) 
 

@@ -32,7 +32,7 @@ async def create_owner(
         new_owner = await service.add_owner(owner)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-    response.headers["Location"] = f"/owners/{new_owner.id}"
+    response.headers["Location"] = f"/api/owners/{new_owner.id}"
     return new_owner
 
 @router.put("/{owner_id}", response_model=OwnerResponse)
