@@ -14,7 +14,7 @@ from app.db.session import AsyncSessionLocal # dacă e greu de folosit în worke
 settings = get_settings()
 TIMEZONE = getattr(settings, "TIMEZONE", "Europe/Bucharest")
 JOB_INTERVAL_MINUTES = int(getattr(settings, "JOB_INTERVAL_MINUTES", 10))
-WINDOW_MINUTES = int(getattr(settings, "WINDOW_MINUTES", 1440))  # 24h = 1440min
+WINDOW_MINUTES = int(getattr(settings, "WINDOW_MINUTES", 180))  # 3h = 180min
 
 def now_tz() -> datetime:
     return datetime.now(ZoneInfo(TIMEZONE))
@@ -22,8 +22,8 @@ def now_tz() -> datetime:
 async def check_policy_expiry():
     now = now_tz()
     today = now.date()
-    window_start = datetime.combine(today, time(0, 0), tzinfo=ZoneInfo(TIMEZONE))
-    window_end = window_start.replace(hour=6, minute=0) + timedelta(minutes=WINDOW_MINUTES)
+    window_start = datetime.combine(today, time(5, 0), tzinfo=ZoneInfo(TIMEZONE))
+    window_end = window_start.replace(hour=0, minute=0) + timedelta(minutes=WINDOW_MINUTES)
 
     log_info("policy_expiry_tick", ts=now.isoformat(), interval_min=JOB_INTERVAL_MINUTES)
 

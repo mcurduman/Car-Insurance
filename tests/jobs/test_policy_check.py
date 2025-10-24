@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import ANY
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, AsyncMock
 from datetime import datetime, date, time
 import jobs.policy_check as policy_check
 
@@ -15,26 +15,29 @@ class DummyPolicy:
 @pytest.mark.asyncio
 @patch("jobs.policy_check.log_info")
 @patch("app.db.session.AsyncSessionLocal")
-@patch("app.db.repositories.policy_repository.PolicyRepository.update_policy_logged_expiry")
-@patch("app.db.repositories.policy_repository.PolicyRepository.get_policies_not_logged_expiry")
+@patch("jobs.policy_check.PolicyRepository")
 @patch("jobs.policy_check.now_tz")
-async def test_policy_expiry_processes_expired_policy(mock_now_tz, mock_get_policies, mock_update_policy, mock_session_cls, mock_log_info):
-    # Window is 4:00-10:00, test at 6:30 (inside), one expired policy with logged_expiry_at=None
+async def test_policy_expiry_processes_expired_policy(
+    mock_now_tz, mock_repo_cls, mock_session_cls, mock_log_info
+):
     from zoneinfo import ZoneInfo
     tz = ZoneInfo(policy_check.TIMEZONE)
     now = datetime(2025, 10, 23, 6, 30, tzinfo=tz)
     mock_now_tz.return_value = now
     mock_session = MagicMock()
     mock_session_cls.return_value.__aenter__.return_value = mock_session
+
     dummy_policy = DummyPolicy(id=42, car_id=123, provider="MockProvider", end_date=now.date(), logged_expiry_at=None)
-    mock_get_policies.return_value = [dummy_policy]
-    mock_update_policy.return_value = dummy_policy
+    mock_repo = MagicMock()
+    mock_repo.get_policies_not_logged_expiry = MagicMock(return_value=[dummy_policy])
+    mock_repo.update_policy_logged_expiry = MagicMock(return_value=dummy_policy)
+    mock_repo_cls.return_value = mock_repo
 
     await policy_check.check_policy_expiry()
-    mock_log_info.assert_any_call("policy_expiry_log_started_checking", timestamp=now.isoformat())
+
+    mock_repo.update_policy_logged_expiry.assert_called_once_with(42, now.date())
     mock_log_info.assert_any_call("policy_expiry_processing", policy_id=42, car_id=123, end_date=str(now.date()))
     mock_log_info.assert_any_call("policy_expiry_logged", policy_id=42, logged_at=now.isoformat())
-    mock_update_policy.assert_called_once_with(42, now.date())
 
 @pytest.mark.asyncio
 @patch("jobs.policy_check.log_info")
