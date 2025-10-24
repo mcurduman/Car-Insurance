@@ -3,6 +3,7 @@ from sqlalchemy import Integer, String, ForeignKey, Date
 from datetime import date
 from typing import Optional
 from app.db.base import Base
+from app.db.models.car_model import Car
 
 class InsurancePolicy(Base):
     __tablename__ = "insurance_policy"

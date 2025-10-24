@@ -6,15 +6,18 @@ from app.api.deps import get_owner_service
 from app.db.models.owner_model import Owner
 from app.service.owner_service import OwnerService
 from app.schemas.owner_schema import OwnerCreate, OwnerUpdate, OwnerResponse
+from app.utils.logging_utils import log_event
 
 router = APIRouter(prefix="/api/owners", tags=["owners"], dependencies=[Depends(get_current_user)])
 
 @router.get("/", response_model=List[OwnerResponse])
+@log_event("list_owners")
 async def list_owners(service: OwnerService = Depends(get_owner_service)):
     owners = await service.list_owners()
     return owners
 
 @router.get("/{owner_id}", response_model=OwnerResponse)
+@log_event("get_owner")
 async def get_owner(owner_id: int, service: OwnerService = Depends(get_owner_service)):
     owner = await service.get_owner(owner_id)
     if not owner:
@@ -22,6 +25,7 @@ async def get_owner(owner_id: int, service: OwnerService = Depends(get_owner_ser
     return owner
 
 @router.post("/", response_model=OwnerResponse, status_code=status.HTTP_201_CREATED)
+@log_event("create_owner")
 async def create_owner(
     owner_create: OwnerCreate,
     response: Response,
@@ -36,6 +40,7 @@ async def create_owner(
     return new_owner
 
 @router.put("/{owner_id}", response_model=OwnerResponse)
+@log_event("update_owner")
 async def update_owner(
     owner_id: int,
     owner_update: OwnerUpdate,

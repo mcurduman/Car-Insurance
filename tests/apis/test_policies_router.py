@@ -139,3 +139,33 @@ async def test_list_policies_for_car_override():
     assert isinstance(response.json(), list)
     assert response.json()[0]["id"] == 1
     app.dependency_overrides.pop(get_policy_service)
+
+# Add async test for delete_policy_for_car endpoint using FakePolicyService and dependency override
+@pytest.mark.asyncio
+def test_delete_policy_for_car_override():
+    class PolicyObj:
+        def __init__(self, id, car_id, provider, start_date, end_date, logged_expiry_at=None):
+            self.id = id
+            self.car_id = car_id
+            self.provider = provider
+            self.start_date = start_date
+            self.end_date = end_date
+            self.logged_expiry_at = logged_expiry_at
+    class FakePolicyService:
+        async def get_policy(self, policy_id):
+            today = date.today()
+            return PolicyObj(policy_id, 1, "TestProvider", today, today, None)
+        async def delete_policy(self, policy_id):
+            return None
+    from app.api.deps import get_policy_service
+    app.dependency_overrides[get_policy_service] = lambda: FakePolicyService()
+    transport = ASGITransport(app=app)
+    async def run():
+        async with AsyncClient(transport=transport, base_url="http://test") as ac:
+            response = await ac.delete("/api/cars/1/policies/10")
+        assert response.status_code == 204
+        app.dependency_overrides.pop(get_policy_service)
+    import asyncio
+    asyncio.run(run())
+
+

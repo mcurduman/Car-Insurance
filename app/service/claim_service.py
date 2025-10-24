@@ -7,7 +7,7 @@ class ClaimService:
 
     async def get_claim(self, id: int) -> Claim | None:
         return await self.claim_repository.get(id)
-    
+
     async def get_claims_by_car_id(self, car_id: int) -> list[Claim]:
         return list(await self.claim_repository.get_by_car_id(car_id))
     

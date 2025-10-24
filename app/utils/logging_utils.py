@@ -3,8 +3,9 @@ import time
 import functools
 import inspect
 import structlog
+from app.core.logging import logger
 
-log = structlog.get_logger()
+log = logger
 
 def log_event(event: str, level: str = "info", include_args: bool = False):
     """
@@ -49,3 +50,6 @@ def log_event(event: str, level: str = "info", include_args: bool = False):
                     raise
             return w
     return decorate
+
+def log_info(message: str, **kwargs):
+    log.info(message, **kwargs)

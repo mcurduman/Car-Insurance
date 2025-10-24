@@ -13,6 +13,7 @@ alembic
 psycopg2-binary
 python-dotenv
 structlog
+apscheduler
 asyncpg
 python-jose
 pydantic[email]

@@ -1,4 +1,19 @@
 services:
+  policy-check-job:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: car-insurance-policy-check-job-dev
+    env_file:
+      - ../.env.development
+    working_dir: /app
+    depends_on:
+      app: 
+        condition: service_healthy
+    command: python jobs/policy_check.py
+    volumes:
+      - ../logs/dev:/app/logs/dev
+      - sqlite-data:/app/data/sqlite
   app:
     build:
       context: ..
@@ -11,6 +26,7 @@ services:
       - sqlite-data:/app/data/sqlite
       - ../alembic:/app/alembic
       - ../alembic.ini:/app/alembic.ini
+        - ../logs/dev:/app/logs/dev
     command: >
       sh -c "
         alembic -c /app/alembic.ini upgrade head &&

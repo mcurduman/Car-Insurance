@@ -1,32 +1,26 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.api.deps import get_async_session, get_car_service, get_validity_service # trebuie să returneze AsyncSession
+from app.api.deps import get_car_service, get_validity_service # trebuie să returneze AsyncSession
 from app.db.models.car_model import Car
-from app.db.models.policy_model import InsurancePolicy
-from app.db.repositories.car_repository import CarRepository
 from app.service.car_service import CarService
 from app.schemas.car_schema import CarWithOwnerResponse, CarCreate, CarUpdate, CarResponse
 from app.auth.oauth2 import get_current_user
 from fastapi import Response
-from app.schemas.claim_schema import ClaimCreate
-from app.service.claim_service import ClaimService
-from app.db.repositories.claim_repository import ClaimRepository
-from app.db.models.claim_model import Claim
 from app.service.validity_service import ValidityService
-from app.service.policy_service import PolicyService
-from app.db.repositories.policy_repository import PolicyRepository
-from app.schemas.policy_schema import InsurancePolicyResponse, InsurancePolicyCreate
 from datetime import date
+from app.utils.logging_utils import log_event
 
 router = APIRouter(prefix="/api/cars", tags=["cars"], dependencies=[Depends(get_current_user)])
 
 @router.get("/", response_model=List[CarWithOwnerResponse])
+@log_event("list_cars")
 async def list_cars(service: CarService = Depends(get_car_service)):
     cars = await service.list_cars_with_owner()
     return cars
 
 @router.get("/{car_id}", response_model=CarResponse)
+@log_event("get_car")
 async def get_car(car_id: int, service: CarService = Depends(get_car_service)):
     car = await service.get_car(car_id)
     if not car:
@@ -34,6 +28,7 @@ async def get_car(car_id: int, service: CarService = Depends(get_car_service)):
     return car
 
 @router.get("/{car_id}/insurance-valid", response_model=dict)
+@log_event("check_insurance_validity")
 async def insurance_valid(
     car_id: int,
     date: date,
@@ -50,6 +45,7 @@ async def insurance_valid(
     return {"carId": car_id, "date": date, "valid": valid}
 
 @router.get("/by-vin/{vin}", response_model=CarResponse)
+@log_event("get_car_by_vin")
 async def get_car_by_vin(vin: str, service: CarService = Depends(get_car_service)):
     car = await service.get_car_by_vin(vin)
     if not car:
@@ -57,6 +53,7 @@ async def get_car_by_vin(vin: str, service: CarService = Depends(get_car_service
     return car
 
 @router.post("/", response_model=CarResponse, status_code=status.HTTP_201_CREATED)
+@log_event("create_car")
 async def create_car(
     car_create: CarCreate,
     response: Response,
@@ -71,6 +68,7 @@ async def create_car(
     return new_car
 
 @router.delete("/{car_id}", status_code=status.HTTP_204_NO_CONTENT)
+@log_event("delete_car")
 async def delete_car(
     car_id: int,
     service: CarService = Depends(get_car_service),

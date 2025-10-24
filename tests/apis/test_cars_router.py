@@ -10,6 +10,8 @@ from app.db.repositories.user_repository import UserRepository
 from app.schemas.user_schema import UserCreate
 import uuid
 
+from unittest.mock import AsyncMock, patch
+
 # Dependency override for authentication
 def override_get_current_user():
     return {"id": 1, "username": "testuser"}
@@ -53,7 +55,10 @@ async def test_user():
         user = await user_repo.create_user(user_data)
         return user
 
-
+# Cover event_loop and setup_owner fixtures
+def test_event_loop_and_setup_owner(event_loop, setup_owner):
+    # Just ensure fixtures are usable and do not raise
+    assert event_loop is not None
 
 @pytest.mark.asyncio
 async def test_list_cars():
@@ -79,6 +84,10 @@ async def test_create_car_success(owner_id):
             print("Car creation failed:", response.status_code, response.json())
         assert response.status_code == 201
         assert response.json()["vin"] == car_data["vin"].upper()
+        resp_json = response.json()
+        assert resp_json["make"] == car_data["make"]
+        assert resp_json["model"] == car_data["model"]
+        assert resp_json["yearOfManufacture"] == car_data["yearOfManufacture"]
         car_id = response.json().get("id")
         assert car_id is not None
 
@@ -133,6 +142,12 @@ async def test_get_car_success(owner_id):
         response = await ac.get(f"/api/cars/{car_id}")
     assert response.status_code == 200
     assert response.json()["vin"] == car_data["vin"].upper()
+    # Cover line 130: check all fields
+    resp_json = response.json()
+    assert resp_json["make"] == car_data["make"]
+    assert resp_json["model"] == car_data["model"]
+    assert resp_json["yearOfManufacture"] == car_data["yearOfManufacture"]
+    assert resp_json["ownerId"] == car_data["ownerId"]
 
 @pytest.mark.asyncio
 async def test_get_car_by_vin_success(owner_id):
@@ -149,6 +164,10 @@ async def test_get_car_by_vin_success(owner_id):
         response = await ac.get(f"/api/cars/by-vin/{car_data['vin']}")
     assert response.status_code == 200
     assert response.json()["vin"] == car_data["vin"]
+    resp_json = response.json()
+    assert resp_json["make"] == car_data["make"]
+    assert resp_json["model"] == car_data["model"]
+    assert resp_json["yearOfManufacture"] == car_data["yearOfManufacture"]
 
 @pytest.mark.asyncio
 async def test_get_car_by_vin_not_found():
@@ -469,3 +488,4 @@ async def test_get_car_by_vin_404_override():
     assert response.status_code == 404
     assert response.json()["detail"] == "Car not found"
     app.dependency_overrides.pop(get_car_service)
+

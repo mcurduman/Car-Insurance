@@ -1,4 +1,3 @@
-# app/api/deps.py
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import AsyncSessionLocal
@@ -12,6 +11,8 @@ from app.db.repositories.claim_repository import ClaimRepository
 from app.service.claim_service import ClaimService
 from app.db.repositories.owner_repository import OwnerRepository
 from app.service.owner_service import OwnerService
+from app.db.repositories.user_repository import UserRepository
+from app.service.user_service import UserService
 
 async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
     async with AsyncSessionLocal() as s:
@@ -52,3 +53,9 @@ async def get_history_service(
 ):
     from app.service.history_service import HistoryService
     return HistoryService(session)
+
+async def get_user_service(
+    session: AsyncSession = Depends(get_async_session),
+):
+    user_repository = UserRepository(session)
+    return UserService(user_repository)

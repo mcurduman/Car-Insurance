@@ -15,9 +15,12 @@ LogLevel = Literal["CRITICAL","ERROR","WARNING","INFO","DEBUG","NOTSET"]
 class Settings(BaseSettings):
     ENV: Env = Env.development
     APP_NAME: str = "car-insurance"
+    JOB_INTERVAL_MINUTES: int = 1
     LOG_LEVEL: Optional[LogLevel] = None
 
     CORS_ALLOW_ORIGINS: list[str] = ["*"]
+
+    LOG_FILE_PATH: str = "logs/app.log"
 
     DATABASE_URL: Optional[str] = None
     DATABASE_URL_SYNC: Optional[str] = None

@@ -1,4 +1,23 @@
 services:
+  policy-check-job:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: car-insurance-policy-check-job
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+      app:
+        condition: service_healthy
+    env_file:
+      - ../.env.production
+    working_dir: /app
+    volumes:
+      - ../logs/prod:/app/logs/prod
+      - pgdata:/app/data/pg
+    command: python jobs/policy_check.py
   superadmin:
     build:
       context: ..
@@ -36,6 +55,8 @@ services:
         condition: service_healthy
     env_file:
       - ../.env.production
+    volumes:
+      - ../logs/prod:/app/logs
     working_dir: /app
     command: alembic -c /app/alembic.ini upgrade head
 
@@ -55,9 +76,10 @@ services:
     env_file:
       - ../.env.production
     volumes:
-      - ../app:/app/app
-      - ../alembic:/app/alembic
-      - ../alembic.ini:/app/alembic.ini
+        - ../logs/prod:/app/logs/prod
+        - ../app:/app/app
+        - ../alembic:/app/alembic
+        - ../alembic.ini:/app/alembic.ini
     working_dir: /app
     command: sh -c "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"
     ports:

@@ -2,6 +2,8 @@ from sqlalchemy.orm import Mapped, mapped_column, declarative_base, relationship
 from sqlalchemy import Integer, String, ForeignKey
 from app.db.base import Base
 from typing import Optional
+from app.db.models.claim_model import Claim
+from app.db.models.owner_model import Owner
 
 class Car(Base):
     __tablename__ = "car"

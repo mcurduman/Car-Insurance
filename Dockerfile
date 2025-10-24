@@ -10,6 +10,8 @@ COPY ./alembic /app/alembic
 COPY ./alembic.ini /app/alembic.ini
 
 COPY ./scripts /app/scripts
+COPY ./jobs /app/jobs
+COPY ./logs /app/logs
 
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 

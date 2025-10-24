@@ -74,3 +74,34 @@ async def test_list_policies():
     result = await policy_service.list_policies()
     assert result == policies
     policy_repository.list.assert_awaited_once()
+
+@pytest.mark.asyncio
+async def test_update_policy_logged_expiry_success():
+    policy_repository = AsyncMock()
+    policy_service = PolicyService(policy_repository)
+    policy = InsurancePolicy(id=10, car_id=10, start_date=None, end_date=None, provider=None, logged_expiry_at=None)
+    policy_repository.get.return_value = policy
+    policy_repository.update_policy_logged_expiry.return_value = policy
+    result = await policy_service.update_policy_logged_expiry(10, "2025-10-24")
+    assert result == policy
+    policy_repository.get.assert_awaited_once_with(10)
+    policy_repository.update_policy_logged_expiry.assert_awaited_once_with(10, "2025-10-24")
+
+@pytest.mark.asyncio
+async def test_update_policy_logged_expiry_not_found():
+    policy_repository = AsyncMock()
+    policy_service = PolicyService(policy_repository)
+    policy_repository.get.return_value = None
+    with pytest.raises(ValueError, match="Policy with ID 11 does not exist."):
+        await policy_service.update_policy_logged_expiry(11, "2025-10-24")
+    policy_repository.get.assert_awaited_once_with(11)
+
+@pytest.mark.asyncio
+async def test_get_policies_not_logged_expiry():
+    policy_repository = AsyncMock()
+    policy_service = PolicyService(policy_repository)
+    policies = [InsurancePolicy(id=12, car_id=12, start_date=None, end_date=None, provider=None, logged_expiry_at=None)]
+    policy_repository.get_policies_not_logged_expiry.return_value = policies
+    result = await policy_service.get_policies_not_logged_expiry("2025-10-24")
+    assert result == policies
+    policy_repository.get_policies_not_logged_expiry.assert_awaited_once_with("2025-10-24")
